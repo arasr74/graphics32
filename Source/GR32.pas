@@ -2672,7 +2672,11 @@ begin
   if (Dst is TBitmap) then
     AssignToBitmap(TBitmap(Dst), Self)
   else
-  if (not ((Dst is TClipboard) and (CopyBitmap32ToClipboard(Self)))) then
+  if (Dst is TClipboard) then
+  begin
+    if (not CopyBitmap32ToClipboard(Self)) then
+      inherited;
+  end else
     inherited;
 end;
 

@@ -56,8 +56,10 @@ function CanPasteBitmap32Alpha: boolean;
 implementation
 
 uses
-  Classes,
+{$IFNDEF FPC}
   Windows,
+{$ENDIF FPC}
+  Classes,
   Graphics,
   Clipbrd,
   SysUtils,
@@ -65,6 +67,7 @@ uses
   GR32_Resamplers;
 
 
+{$IFNDEF FPC}
 type
   TGlobalMemoryStream = class(TCustomMemoryStream)
   private
@@ -128,6 +131,7 @@ begin
     end;
   end;
 end;
+{$ENDIF FPC}
 
 //------------------------------------------------------------------------------
 //
@@ -142,9 +146,11 @@ function CopyBitmap32ToClipboard(const Source: TCustomBitmap32): boolean;
 var
   Matte: TBitmap32;
   Bitmap: TBitmap;
-  Handle: HGlobal;
+{$IFNDEF FPC}
   Size: integer;
+  Handle: HGlobal;
   Stream: TStream;
+{$ENDIF FPC}
 begin
   Result := True;
 
@@ -211,6 +217,7 @@ begin
       Bitmap.Free;
     end;
 
+{$IFNDEF FPC}
     // Allocate room for BI_BITFIELDS whether we use it or not. It's just 12 bytes.
     Size := SizeOf(TBitmapV5Header) + 3 * SizeOf(DWORD) + Source.Width * Source.Height * SizeOf(DWORD);
     Handle := GlobalAlloc(GMEM_MOVEABLE, Size);
@@ -235,6 +242,7 @@ begin
         GlobalFree(Handle);
       raise;
     end;
+{$ENDIF FPC}
   finally
     Clipboard.Close;
   end;
@@ -244,10 +252,15 @@ end;
 
 function PasteBitmap32FromClipboard(const Dest: TCustomBitmap32): boolean;
 var
+{$IFNDEF FPC}
   Handle: HGlobal;
   Stream: TStream;
   Bitmap: TBitmap;
+{$ELSE FPC}
+  Picture: TPicture;
+{$ENDIF FPC}
 begin
+{$IFNDEF FPC}
   Result := False;
 
   if (Clipboard.HasFormat(CF_DIBV5)) then
@@ -303,6 +316,16 @@ begin
 
     Result := True;
   end;
+{$ELSE FPC}
+  Picture := TPicture.Create;
+  try
+    Picture.Assign(Clipboard);
+    Dest.Assign(Picture);
+  finally
+    Picture.Free;
+  end;
+  Result := True;
+{$ENDIF FPC}
 end;
 
 //------------------------------------------------------------------------------
