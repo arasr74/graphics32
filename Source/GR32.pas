@@ -6089,6 +6089,10 @@ type
     InfoHeaderVersion5: (V5Header: TBitmapV5Header);             // 124
   end;
 
+{$IFDEF FPC}
+const
+  LCS_GM_IMAGES = 4;
+{$ENDIF}
 var
   InfoHeaderVersion: TInfoHeaderVersion;
   Header: TDIBHeader;

@@ -66,6 +66,10 @@ uses
   GR32_Backends_Generic,
   GR32_Resamplers;
 
+{$IFDEF FPC}
+const
+  CF_DIBV5 = 17;
+{$ENDIF}
 
 {$IFNDEF FPC}
 type
@@ -200,7 +204,7 @@ begin
     // explicit CF_BITMAP.
     Bitmap := TBitmap.Create;
     try
-      Matte := TBitmap32.Create(TMemoryBackend);
+      Matte := TBitmap32.Create;
       try
         Matte.SetSize(Source.Width, Source.Height);
         Matte.Clear(clWhite32);
@@ -332,14 +336,32 @@ end;
 
 function CanPasteBitmap32: boolean;
 begin
-  Result:= Clipboard.HasFormat(CF_BITMAP) or Clipboard.HasFormat(CF_DIBV5);
+  try
+    Result:= Clipboard.HasFormat(CF_BITMAP) or Clipboard.HasFormat(CF_DIBV5);
+  except
+{$IFDEF FPC}
+    Result := False;
+{$ELSE FPC}
+    on E: EClipboardException do
+      Result := False; // Something else has the clipboard open
+{$ENDIF FPC}
+  end;
 end;
 
 //------------------------------------------------------------------------------
 
 function CanPasteBitmap32Alpha: boolean;
 begin
-  Result:= Clipboard.HasFormat(CF_DIBV5);
+  try
+    Result:= Clipboard.HasFormat(CF_DIBV5);
+  except
+{$IFDEF FPC}
+    Result := False;
+{$ELSE FPC}
+    on E: EClipboardException do
+      Result := False; // Something else has the clipboard open
+{$ENDIF FPC}
+  end;
 end;
 
 //------------------------------------------------------------------------------
